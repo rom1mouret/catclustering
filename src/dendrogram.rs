@@ -1,12 +1,3 @@
-use rand::Rng;
-use rand::RngCore;
-use rand::seq::SliceRandom;
-use std::collections::BinaryHeap;
-use std::collections::HashSet;
-use std::cmp::{PartialEq, PartialOrd, Ord, Ordering};
-use std::any::Any;
-use std::collections::VecDeque;
-
 pub enum Dendrogram {
     Leaf(usize),  // row index
     Node(Box<Dendrogram>, Box<Dendrogram>, u16, usize), // cluster1, cluster2, distance, size
@@ -68,7 +59,7 @@ pub fn assign_rows_to_clusters(dendrogram: &Dendrogram, assignments: &mut Vec<us
 }
 
 pub fn find_clusters(dendrogram: &Dendrogram, n_rows: usize, max_cluster_size: usize) -> Vec<Vec<usize>> {
-    let mut assignments = vec![0 as usize; n_rows];
+    let mut assignments = vec![usize::MAX as usize; n_rows];
     let num_clusters = assign_rows_to_clusters(&dendrogram, &mut assignments, max_cluster_size);
     let mut clusters: Vec<Vec<usize>> = (0..num_clusters).map(|_| Vec::new()).collect();
 
