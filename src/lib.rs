@@ -30,14 +30,14 @@ mod tests {
             }
             n as u16
         }
-        fn symmetric_distance(&self, other: &dyn data::CategoryMatrix) -> u16 {
+        fn distance(&self, other: &dyn data::CategoryMatrix) -> i16 {
             // TODO: panic here if not right type
             other.as_any().downcast_ref::<SimpleMatrix>().map_or(0, |other_matrix| {
                 let mut d = 0;
                 for i in 0..self.sets.len() {
                     d += self.sets[i].symmetric_difference(&other_matrix.sets[i]).count();
                 }
-                d as u16
+                d as i16
             })
         }
         fn extend(&mut self, other: &dyn data::CategoryMatrix) {
@@ -50,6 +50,10 @@ mod tests {
                 }
                 None => {},
             }
+        }
+        fn clear(&mut self) {
+            self.sets.clear();
+            self.sets.shrink_to_fit();
         }
         fn as_any(&self) -> &dyn Any {
             self

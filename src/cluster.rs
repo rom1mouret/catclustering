@@ -1,5 +1,4 @@
 use std::cmp::{PartialEq, PartialOrd, Ord, Ordering};
-use std::any::Any;
 use crate::data::CategoryMatrix;
 use crate::dendrogram::Dendrogram;
 
@@ -14,7 +13,7 @@ pub(crate) struct Link {
     pub(crate) cluster2_index: usize,
     pub(crate) cluster1_num_categories: u16,
     pub(crate) cluster2_num_categories: u16,
-    pub(crate) distance: u16,
+    pub(crate) distance: i16,
 }
 
 
@@ -46,7 +45,7 @@ impl Cluster {
         self.categories.num_categories()
     }
 
-    pub(crate) fn symmetric_distance(&self, other: &Cluster) -> u16 {
-        self.categories.symmetric_distance(&*other.categories)
+    pub(crate) fn distance(&self, other: &Cluster) -> i16 {
+        self.categories.distance(&*other.categories)
     }
 }

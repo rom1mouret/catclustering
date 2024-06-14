@@ -61,11 +61,11 @@ where
     neighbors
 }
 
-fn find_umerged_cluster(clusters: &Vec<cluster::Cluster>, index: usize) -> usize {
-    match clusters[index].merged_into {
-        None => index,
-        Some(other) => find_umerged_cluster(clusters, other)
+fn find_umerged_cluster(clusters: &Vec<cluster::Cluster>, mut index: usize) -> usize {
+    while let Some(other) = clusters[index].merged_into {
+        index = other;
     }
+    index
 }
 
 pub fn create_dendrogram<D, R>(data: &D, init_iterations: Option<i32>, rng: &mut R) -> dendrogram::Dendrogram
@@ -88,7 +88,7 @@ where
     let mut heap: BinaryHeap<cluster::Link> = BinaryHeap::new();
     for (row_idx1, row_idx2) in &neighbors{
         heap.push(cluster::Link{
-            distance: clusters[*row_idx1].symmetric_distance(&clusters[*row_idx2]),
+            distance: clusters[*row_idx1].distance(&clusters[*row_idx2]),
             cluster1_index: *row_idx1,
             cluster2_index: *row_idx2,
             cluster1_num_categories: num_cols,
@@ -111,7 +111,7 @@ where
                         if c1_len != link.cluster1_num_categories || c2_len != link.cluster2_num_categories {
                             // one of the two clusters have changed -> we need to update the distance
                             heap.push(cluster::Link{
-                                distance: c1.symmetric_distance(c2),
+                                distance: c1.distance(c2),
                                 cluster1_index: link.cluster1_index,
                                 cluster2_index: link.cluster2_index,
                                 cluster1_num_categories: c1_len,
@@ -138,6 +138,7 @@ where
                                 };
 
                             // update the cluster
+                            /* the stack overflow happens because of one of the instructions below: */
                             let dendro1 = dest.dendrogram.take().unwrap();
                             let dendro2 = src.dendrogram.take().unwrap();
                             let new_size = dendro1.size() + dendro2.size();
@@ -149,9 +150,9 @@ where
                                     new_size,
                                 )
                             );
+                            /* the stack overflow happens because of one of the instructions above */
                             dest.categories.extend(&*src.categories);
-
-                            // TODO: clear memory of src
+                            src.categories.clear();
 
                             src.merged_into = Some(dest_idx);
                             last_cluster_idx = dest_idx;
@@ -162,7 +163,7 @@ where
                         if unmerged_idx != link.cluster1_index {
                             let unmerged = &clusters[unmerged_idx];
                             heap.push(cluster::Link{
-                                distance: c1.symmetric_distance(unmerged),
+                                distance: c1.distance(unmerged),
                                 cluster1_index: link.cluster1_index,
                                 cluster2_index: unmerged_idx,
                                 cluster1_num_categories: c1.num_categories(),
@@ -179,7 +180,7 @@ where
                         if unmerged_idx != link.cluster2_index {
                             let unmerged = &clusters[unmerged_idx];
                             heap.push(cluster::Link{
-                                distance: c2.symmetric_distance(unmerged),
+                                distance: c2.distance(unmerged),
                                 cluster1_index: unmerged_idx,
                                 cluster2_index: link.cluster2_index,
                                 cluster1_num_categories: unmerged.num_categories(),
@@ -194,7 +195,7 @@ where
                             let unmerged1 = &clusters[unmerged1_idx];
                             let unmerged2 = &clusters[unmerged1_idx];
                             heap.push(cluster::Link{
-                                distance: unmerged1.symmetric_distance(unmerged2),
+                                distance: unmerged1.distance(unmerged2),
                                 cluster1_index: unmerged1_idx,
                                 cluster2_index: unmerged2_idx,
                                 cluster1_num_categories: unmerged1.num_categories(),
@@ -206,14 +207,6 @@ where
             },
         }
     }
-
-    for c in &clusters {
-        println!("has not been merged? {}", c.merged_into.is_none());
-    }
-    let not_merged = clusters.iter().map(|c| if c.merged_into.is_none() {1} else {0}).sum::<i32>();
-    println!("not merged: {}", not_merged);
-
-    assert!(not_merged == 1);
 
     let top_cluster = clusters.remove(last_cluster_idx);
     top_cluster.dendrogram.unwrap()

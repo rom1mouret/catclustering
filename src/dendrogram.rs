@@ -1,6 +1,9 @@
+use std::mem::{ManuallyDrop, replace};
+use std::ptr;
+
 pub enum Dendrogram {
     Leaf(usize),  // row index
-    Node(Box<Dendrogram>, Box<Dendrogram>, u16, usize), // cluster1, cluster2, distance, size
+    Node(Box<Dendrogram>, Box<Dendrogram>, i16, usize), // cluster1, cluster2, distance, size
 }
 
 impl Dendrogram {
@@ -8,6 +11,30 @@ impl Dendrogram {
         match self {
             Dendrogram::Leaf(_) => 1,
             Dendrogram::Node(_, _, _, s) => *s,
+        }
+    }
+}
+
+// Rust's default's implementation of drop() is recursive, so we write a custom
+// non-recursive drop() to avoid stack overflows.
+impl Drop for Dendrogram {
+    fn drop(&mut self) {
+        let mut stack = vec![ManuallyDrop::new(replace(self, Dendrogram::Leaf(0)))];
+
+        while let Some(mut current) = stack.pop() {
+            match &mut *current {
+                Dendrogram::Leaf(_) => {
+                },
+                Dendrogram::Node(ref mut cluster1, ref mut cluster2, _, _) => {
+                    // Move the boxes out to avoid double-free issues
+                    let left = replace(cluster1, Box::new(Dendrogram::Leaf(0)));
+                    let right = replace(cluster2, Box::new(Dendrogram::Leaf(0)));
+
+                    // Extract the inner Dendrogram from the Box and push it onto the stack
+                    stack.push(ManuallyDrop::new(*left));
+                    stack.push(ManuallyDrop::new(*right));
+                },
+            }
         }
     }
 }
