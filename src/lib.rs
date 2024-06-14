@@ -31,24 +31,17 @@ mod tests {
             n as u16
         }
         fn distance(&self, other: &dyn data::CategoryMatrix) -> i16 {
-            // TODO: panic here if not right type
-            other.as_any().downcast_ref::<SimpleMatrix>().map_or(0, |other_matrix| {
-                let mut d = 0;
-                for i in 0..self.sets.len() {
-                    d += self.sets[i].symmetric_difference(&other_matrix.sets[i]).count();
-                }
-                d as i16
-            })
+            let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
+            let mut d = 0;
+            for i in 0..self.sets.len() {
+                d += self.sets[i].symmetric_difference(&o.sets[i]).count();
+            }
+            d as i16
         }
         fn extend(&mut self, other: &dyn data::CategoryMatrix) {
-            // TODO: panic here
-            match other.as_any().downcast_ref::<SimpleMatrix>() {
-                Some(other_matrix) => {
-                    for i in 0..self.sets.len() {
-                        self.sets[i].extend(&other_matrix.sets[i]);
-                    }
-                }
-                None => {},
+            let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
+            for i in 0..self.sets.len() {
+                self.sets[i].extend(&o.sets[i]);
             }
         }
         fn clear(&mut self) {
@@ -66,7 +59,6 @@ mod tests {
         }
 
         fn get_num_columns(&self) -> usize {
-            // Relying on the assumption all rows are of the same length.
             self[0].len()
         }
 
@@ -83,13 +75,13 @@ mod tests {
         }
     }
 
-    fn create_random_matrix(rows: usize, cols: usize) -> Vec<Vec<i32>> {
+    fn create_random_matrix(rows: usize, cols: usize, range: std::ops::Range<i32>) -> Vec<Vec<i32>> {
         let mut rng = rand::thread_rng();
         let mut matrix = Vec::with_capacity(rows);
 
         for _ in 0..rows {
             let row: Vec<i32> = (0..cols)
-                .map(|_| rng.gen_range(0..5))
+                .map(|_| rng.gen_range(range.clone()))
                 .collect();
             matrix.push(row);
         }
@@ -99,49 +91,67 @@ mod tests {
 
 
     #[test]
-    fn test_clear_clusters() {
-        let n_clusters = 10;
-        let n_rows = n_clusters * 12;
-
+    fn test_clear_boundaries() {
         let mut rng = rand::thread_rng();
-        let mut matrix = create_random_matrix(n_rows, 3);
+        for iteration in 1..10 {
+            let n_clusters = 10 * iteration;
+            let n_rows = n_clusters * 12;
 
-        
-        // initialize matrix with only 10 different values that should be clustered together
-        for i in 0..matrix.len() {
-            let v = i % n_clusters;
-            for c in 0..matrix[0].len() {
-                matrix[i][c] = v as i32;
+            let mut matrix = create_random_matrix(n_rows, 3, 0..1);
+
+            // initialize matrix with only n_clusters different values that should be clustered together
+            for i in 0..matrix.len() {
+                let v = i % n_clusters;
+                for c in 0..matrix[0].len() {
+                    matrix[i][c] = v as i32;
+                }
+            }
+
+            let dendro = create_dendrogram(&matrix, None, &mut rng);
+            let clusters = dendrogram::find_clusters(&dendro, n_rows, n_rows / n_clusters);
+            
+            let clustered_rows = clusters.iter().map(|v| v.len()).sum();
+            assert!(n_rows == clustered_rows);
+
+            assert!(clusters.len() == n_clusters);
+            for row_indices in &clusters {
+                assert!(row_indices.len() == n_rows / n_clusters);
+                let t = row_indices[0] % n_clusters;
+                for i in row_indices {
+                    assert!(i % n_clusters == t);
+                }
             }
         }
-
-        let dendro = create_dendrogram(&matrix, None, &mut rng);
-        let clusters = dendrogram::find_clusters(&dendro, n_rows, n_rows / n_clusters);
-        
-        let clustered_rows = clusters.iter().map(|v| v.len()).sum();
-        assert!(n_rows == clustered_rows);
-
-        println!("number of clusters: {}", clusters.len());
-
-        assert!(clusters.len() == n_clusters);
-        for row_indices in &clusters {
-            assert!(row_indices.len() == n_rows / n_clusters);
-            let t = row_indices[0] % n_clusters;
-            for i in row_indices {
-                assert!(i % n_clusters == t);
-            }
-        }
-        
     }
 
 
     #[test]
-    fn test_add() {
-        let mut rng = rand::thread_rng();
-        let matrix = create_random_matrix(10_000, 5);
-        let dendro = create_dendrogram(&matrix, None, &mut rng);
+    fn test_two_clusters() {
+        let cluster_size = 100;
+        let matrix1 = create_random_matrix(cluster_size, 3, 0..4);
+        let matrix2 = create_random_matrix(cluster_size, 3, 5..10);
 
-        let clusters = dendrogram::find_clusters(&dendro, matrix.len(), 1000);
-        
+        let mut matrix = Vec::new();
+        matrix.extend(matrix1);
+        matrix.extend(matrix2);
+
+        let mut rng = rand::thread_rng();
+        let dendro = create_dendrogram(&matrix, None, &mut rng);
+        let clusters = dendrogram::find_clusters(&dendro, 2*cluster_size, cluster_size);
+
+        assert!(clusters.len() == 2);
+        assert!(clusters[0].len() == cluster_size);
+        assert!(clusters[1].len() == cluster_size);
+
+        let (m1, m2) = if clusters[0] < clusters[1] {
+            (&clusters[0], &clusters[1])
+        } else {
+            (&clusters[1], &clusters[0])
+        };
+
+        assert!(*m1.iter().min().unwrap() == 0);
+        assert!(*m1.iter().max().unwrap() == cluster_size - 1);
+        assert!(*m2.iter().min().unwrap() == cluster_size);
+        assert!(*m2.iter().max().unwrap() == 2*cluster_size - 1);
     }
 }
