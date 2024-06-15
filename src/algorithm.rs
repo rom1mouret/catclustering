@@ -193,7 +193,7 @@ fn clustering_main_loop(
 ///
 /// * `data` - The data organized in rows and columns.
 /// * `init_iterations` - The number of initializing iterations.
-///    During initialization, the algorithm shuffles the columns to find the neighbors under different "perspectives" on the data.
+///    During initialization, the algorithm builds a sparse adjacency matrix by projecting the data differently through multiple shuffles/rotations of the columns.
 /// * `rng` - A random number generator that will be used for the initialization step.
 ///
 /// # Returns

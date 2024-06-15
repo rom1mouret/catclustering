@@ -3,8 +3,8 @@
 //! `catclustering` implements complete-linkage agglomerative hierarchical clustering for
 //! categorical data.
 //!
-//! It is designed to be fast.
-//! ```
+//! It is designed to be fast with a (somewhat) limited memory footprint.
+//! Explanation and examples [here](https://github.com/rom1mouret/catclustering).
 
 mod algorithm;
 mod cluster;

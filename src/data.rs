@@ -1,6 +1,6 @@
 use std::any::Any;
 
-/// The trait you need to implement for the algorithm to peform merge and distance calculation between clusters.
+/// The trait you need to implement to provide the algorithm a distance and merging strategy.
 pub trait CategoryMatrix {
     fn num_categories(&self) -> u16;
 

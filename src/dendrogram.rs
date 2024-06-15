@@ -64,10 +64,10 @@ fn assign_rows_to<'a>(
 ///
 /// # Arguments
 ///
-/// * `dendrogram` - The dendogram returns by create_dendrogram.
-/// * `assignments` - cluster number for each row. This is passed as an argument for you to be able to recycle the vector across multiple calls.
+/// * `dendrogram` - The dendogram returned by create_dendrogram.
+/// * `assignments` - cluster number for each row. This is passed as an argument for you to be able to reuse the vector across multiple calls.
 ///    The vector will be resized if too small.
-/// * `max_cluster_size` - The maximum size of the clusters returned.
+/// * `max_cluster_size` - The maximum size of the returned clusters.
 ///
 /// # Returns
 ///
@@ -113,7 +113,7 @@ pub fn assign_rows_to_clusters(
 ///
 /// # Arguments
 ///
-/// * `dendrogram` - The dendogram returns by create_dendrogram.
+/// * `dendrogram` - The dendogram returned by create_dendrogram.
 /// * `max_cluster_size` - The maximum size of the clusters returned.
 ///
 /// # Returns
