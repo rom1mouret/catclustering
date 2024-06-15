@@ -1,6 +1,6 @@
-use std::cmp::{PartialEq, PartialOrd, Ord, Ordering};
 use crate::data::CategoryMatrix;
 use crate::dendrogram::Dendrogram;
+use std::cmp::{Ord, Ordering, PartialEq, PartialOrd};
 
 pub(crate) struct Cluster {
     pub(crate) categories: Box<dyn CategoryMatrix>,
@@ -16,16 +16,13 @@ pub(crate) struct Link {
     pub(crate) distance: i16,
 }
 
-
 impl PartialEq for Link {
     fn eq(&self, other: &Link) -> bool {
-        return self.distance == other.distance
+        return self.distance == other.distance;
     }
 }
 
-impl Eq for Link {
-   
-}
+impl Eq for Link {}
 
 impl PartialOrd for Link {
     fn partial_cmp(&self, other: &Link) -> Option<Ordering> {

@@ -1,26 +1,32 @@
+//! # CatClustering
+//!
+//! `catclustering` implements complete-linkage agglomerative hierarchical clustering for
+//! categorical data.
+//!
+//! It is designed to be fast.
+//! ```
+
 mod algorithm;
-mod dendrogram;
-mod data;
 mod cluster;
+mod data;
+mod dendrogram;
 
 pub use algorithm::create_dendrogram;
-pub use dendrogram::find_clusters;
-pub use dendrogram::assign_rows_to_clusters;
 pub use data::CategoryMatrix;
 pub use data::IndexableCategoryData;
+pub use dendrogram::assign_rows_to_clusters;
+pub use dendrogram::find_clusters;
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-    use std::any::Any;
-    use rand::Rng;
     use super::*;
-    
+    use rand::Rng;
+    use std::any::Any;
+    use std::collections::HashSet;
 
     struct SimpleMatrix {
         sets: Vec<HashSet<u16>>,
     }
-
 
     impl data::CategoryMatrix for SimpleMatrix {
         fn num_categories(&self) -> u16 {
@@ -51,7 +57,7 @@ mod tests {
         fn as_any(&self) -> &dyn Any {
             self
         }
-    }   
+    }
 
     impl data::IndexableCategoryData for Vec<Vec<i32>> {
         fn get_category_value(&self, row_index: usize, column_index: usize) -> u16 {
@@ -67,28 +73,29 @@ mod tests {
         }
 
         fn create_category_matrix(&self, row_index: usize) -> Box<dyn data::CategoryMatrix> {
-            Box::new(SimpleMatrix{
-                sets: (0..self[0].len()).map(|i| {
-                    HashSet::from_iter(vec![self[row_index][i] as u16])
-                }).collect()
+            Box::new(SimpleMatrix {
+                sets: (0..self[0].len())
+                    .map(|i| HashSet::from_iter(vec![self[row_index][i] as u16]))
+                    .collect(),
             })
         }
     }
 
-    fn create_random_matrix(rows: usize, cols: usize, range: std::ops::Range<i32>) -> Vec<Vec<i32>> {
+    fn create_random_matrix(
+        rows: usize,
+        cols: usize,
+        range: std::ops::Range<i32>,
+    ) -> Vec<Vec<i32>> {
         let mut rng = rand::thread_rng();
         let mut matrix = Vec::with_capacity(rows);
 
         for _ in 0..rows {
-            let row: Vec<i32> = (0..cols)
-                .map(|_| rng.gen_range(range.clone()))
-                .collect();
+            let row: Vec<i32> = (0..cols).map(|_| rng.gen_range(range.clone())).collect();
             matrix.push(row);
         }
 
         matrix
     }
-
 
     #[test]
     fn test_clear_boundaries() {
@@ -108,8 +115,8 @@ mod tests {
             }
 
             let dendro = create_dendrogram(&matrix, None, &mut rng);
-            let clusters = dendrogram::find_clusters(&dendro, n_rows, n_rows / n_clusters);
-            
+            let clusters = dendrogram::find_clusters(&dendro, n_rows / n_clusters);
+
             let clustered_rows = clusters.iter().map(|v| v.len()).sum();
             assert!(n_rows == clustered_rows);
 
@@ -124,7 +131,6 @@ mod tests {
         }
     }
 
-
     #[test]
     fn test_two_clusters() {
         let cluster_size = 100;
@@ -137,7 +143,7 @@ mod tests {
 
         let mut rng = rand::thread_rng();
         let dendro = create_dendrogram(&matrix, None, &mut rng);
-        let clusters = dendrogram::find_clusters(&dendro, 2*cluster_size, cluster_size);
+        let clusters = dendrogram::find_clusters(&dendro, cluster_size);
 
         assert!(clusters.len() == 2);
         assert!(clusters[0].len() == cluster_size);
@@ -152,6 +158,6 @@ mod tests {
         assert!(*m1.iter().min().unwrap() == 0);
         assert!(*m1.iter().max().unwrap() == cluster_size - 1);
         assert!(*m2.iter().min().unwrap() == cluster_size);
-        assert!(*m2.iter().max().unwrap() == 2*cluster_size - 1);
+        assert!(*m2.iter().max().unwrap() == 2 * cluster_size - 1);
     }
 }
