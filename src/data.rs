@@ -1,17 +1,17 @@
 use std::any::Any;
 
 /// The trait you need to implement to provide the algorithm a distance and merging strategy.
-pub trait CategoryMatrix {
+pub trait ClusterSummary {
     fn num_categories(&self) -> u16;
 
     /// Doesn't have to be a proper distance. It has to be symmetric, but it can:
     ///
     /// * be negative
     /// * not satisfy the triangle inequality
-    fn distance(&self, other: &dyn CategoryMatrix) -> i16;
+    fn distance(&self, other: &dyn ClusterSummary) -> f32;
 
-    /// Merge another CategoryMatrix into the one at hand.
-    fn extend(&mut self, other: &dyn CategoryMatrix);
+    /// Merge another ClusterSummary into the one at hand.
+    fn extend(&mut self, other: &dyn ClusterSummary);
 
     /// Clear the memory used by your structure
     fn clear(&mut self);
@@ -22,8 +22,8 @@ pub trait CategoryMatrix {
 
 /// The trait you need to implement for the clustering algorithm to access your data.
 pub trait IndexableCategoryData {
-    fn get_category_value(&self, row_index: usize, column_index: usize) -> u16;
+    fn get_value(&self, row_index: usize, column_index: usize) -> f32;
     fn get_num_columns(&self) -> usize;
     fn get_num_rows(&self) -> usize;
-    fn create_category_matrix(&self, row_index: usize) -> Box<dyn CategoryMatrix>;
+    fn create_cluster_summary(&self, row_index: usize) -> Box<dyn ClusterSummary>;
 }

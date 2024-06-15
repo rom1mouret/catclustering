@@ -2,7 +2,7 @@ use std::mem::{replace, ManuallyDrop};
 
 pub enum Dendrogram {
     Leaf(usize),                                        // row index
-    Node(Box<Dendrogram>, Box<Dendrogram>, i16, usize), // cluster1, cluster2, distance, size
+    Node(Box<Dendrogram>, Box<Dendrogram>, f32, usize), // cluster1, cluster2, distance, size
 }
 
 impl Dendrogram {

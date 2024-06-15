@@ -14,16 +14,16 @@ struct MyData {
     vecs: Vec<Vec<i32>>,
 }
 
-impl catclustering::CategoryMatrix for SimpleMatrix {
+impl catclustering::ClusterSummary for SimpleMatrix {
     fn num_categories(&self) -> u16 {
         self.col1to4.count_ones() as u16 + self.col5.len() as u16
     }
-    fn distance(&self, other: &dyn catclustering::CategoryMatrix) -> i16 {
+    fn distance(&self, other: &dyn catclustering::ClusterSummary) -> i16 {
         let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
         (self.col1to4 ^ o.col1to4).count_ones() as i16
             + self.col5.symmetric_difference(&o.col5).count() as i16
     }
-    fn extend(&mut self, other: &dyn catclustering::CategoryMatrix) {
+    fn extend(&mut self, other: &dyn catclustering::ClusterSummary) {
         let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
 
         self.col1to4 |= o.col1to4;
@@ -39,7 +39,7 @@ impl catclustering::CategoryMatrix for SimpleMatrix {
 }
 
 impl catclustering::IndexableCategoryData for MyData {
-    fn get_category_value(&self, row_index: usize, column_index: usize) -> u16 {
+    fn get_value(&self, row_index: usize, column_index: usize) -> u16 {
         self.vecs[row_index][column_index] as u16
     }
 
@@ -51,7 +51,7 @@ impl catclustering::IndexableCategoryData for MyData {
         self.vecs.len()
     }
 
-    fn create_category_matrix(&self, row_index: usize) -> Box<dyn catclustering::CategoryMatrix> {
+    fn create_cluster_summary(&self, row_index: usize) -> Box<dyn catclustering::ClusterSummary> {
         let row = &self.vecs[row_index];
         Box::new(SimpleMatrix {
             col1to4: (1 << row[0])

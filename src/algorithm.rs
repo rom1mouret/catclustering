@@ -40,10 +40,10 @@ where
                     break;
                 }
             }
-            row_indices.sort_by(|i, j| {
+            row_indices.sort_unstable_by(|i, j| {
                 for c in &col_indices {
-                    let v1 = data.get_category_value(*i, *c);
-                    let v2 = data.get_category_value(*j, *c);
+                    let v1 = data.get_value(*i, *c);
+                    let v2 = data.get_value(*j, *c);
                     if v1 < v2 {
                         return std::cmp::Ordering::Less;
                     } else if v2 > v1 {
@@ -218,7 +218,7 @@ where
         .map({
             |r| cluster::Cluster {
                 merged_into: None,
-                categories: data.create_category_matrix(r),
+                categories: data.create_cluster_summary(r),
                 dendrogram: Some(dendrogram::Dendrogram::Leaf(r)),
             }
         })

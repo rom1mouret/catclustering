@@ -12,7 +12,7 @@ mod data;
 mod dendrogram;
 
 pub use algorithm::create_dendrogram;
-pub use data::CategoryMatrix;
+pub use data::ClusterSummary;
 pub use data::IndexableCategoryData;
 pub use dendrogram::assign_rows_to_clusters;
 pub use dendrogram::find_clusters;
@@ -28,7 +28,7 @@ mod tests {
         sets: Vec<HashSet<u16>>,
     }
 
-    impl data::CategoryMatrix for SimpleMatrix {
+    impl data::ClusterSummary for SimpleMatrix {
         fn num_categories(&self) -> u16 {
             let mut n = 0;
             for h in &self.sets {
@@ -36,15 +36,15 @@ mod tests {
             }
             n as u16
         }
-        fn distance(&self, other: &dyn data::CategoryMatrix) -> i16 {
+        fn distance(&self, other: &dyn data::ClusterSummary) -> f32 {
             let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
             let mut d = 0;
             for i in 0..self.sets.len() {
                 d += self.sets[i].symmetric_difference(&o.sets[i]).count();
             }
-            d as i16
+            d as f32
         }
-        fn extend(&mut self, other: &dyn data::CategoryMatrix) {
+        fn extend(&mut self, other: &dyn data::ClusterSummary) {
             let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
             for i in 0..self.sets.len() {
                 self.sets[i].extend(&o.sets[i]);
@@ -60,8 +60,8 @@ mod tests {
     }
 
     impl data::IndexableCategoryData for Vec<Vec<i32>> {
-        fn get_category_value(&self, row_index: usize, column_index: usize) -> u16 {
-            self[row_index][column_index] as u16
+        fn get_value(&self, row_index: usize, column_index: usize) -> f32 {
+            self[row_index][column_index] as f32
         }
 
         fn get_num_columns(&self) -> usize {
@@ -72,7 +72,7 @@ mod tests {
             self.len()
         }
 
-        fn create_category_matrix(&self, row_index: usize) -> Box<dyn data::CategoryMatrix> {
+        fn create_cluster_summary(&self, row_index: usize) -> Box<dyn data::ClusterSummary> {
             Box::new(SimpleMatrix {
                 sets: (0..self[0].len())
                     .map(|i| HashSet::from_iter(vec![self[row_index][i] as u16]))
