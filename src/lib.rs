@@ -1,9 +1,6 @@
 //! # CatClustering
 //!
-//! `catclustering` implements complete-linkage agglomerative hierarchical clustering for
-//! categorical data.
-//!
-//! It is designed to be fast with a (somewhat) limited memory footprint.
+//! `catclustering` implements hierarchical agglomerative clustering optimized for categorical features and (approximated) complete-linkage.
 //! Explanation and examples [here](https://github.com/rom1mouret/catclustering).
 
 mod algorithm;
@@ -29,12 +26,12 @@ mod tests {
     }
 
     impl data::ClusterSummary for SimpleMatrix {
-        fn num_categories(&self) -> u16 {
+        fn summary_size(&self) -> usize {
             let mut n = 0;
             for h in &self.sets {
                 n += h.len();
             }
-            n as u16
+            n
         }
         fn distance(&self, other: &dyn data::ClusterSummary) -> f32 {
             let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();

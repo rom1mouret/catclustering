@@ -87,18 +87,23 @@ fn clustering_main_loop(
             None => {
                 match c2.merged_into {
                     None => {
-                        let c1_len = c1.num_categories();
-                        let c2_len = c2.num_categories();
-                        if c1_len != link.cluster1_num_categories
-                            || c2_len != link.cluster2_num_categories
+                        let c1_len = c1.summary_size();
+                        let c2_len = c2.summary_size();
+                        if c1_len != link.cluster1_summary_size
+                            || c2_len != link.cluster2_summary_size
                         {
+                            let new_distance = c1.distance(c2);
+                            if cfg!(debug_assertions) {
+                                assert!(new_distance < link.distance, "distance function does not statisfy properties required for complete-linkage");
+                            }
+
                             // one of the two clusters have changed -> we need to update the distance
                             heap.push(cluster::Link {
-                                distance: c1.distance(c2),
+                                distance: new_distance,
                                 cluster1_index: link.cluster1_index,
                                 cluster2_index: link.cluster2_index,
-                                cluster1_num_categories: c1_len,
-                                cluster2_num_categories: c2_len,
+                                cluster1_summary_size: c1_len,
+                                cluster2_summary_size: c2_len,
                             })
                         } else {
                             // we can merge the two clusters
@@ -128,8 +133,8 @@ fn clustering_main_loop(
                                 link.distance,
                                 new_size,
                             ));
-                            dest.categories.extend(&*src.categories);
-                            src.categories.clear();
+                            dest.summary.extend(&*src.summary);
+                            src.summary.clear();
 
                             src.merged_into = Some(dest_idx);
                             last_cluster_idx = dest_idx;
@@ -143,8 +148,8 @@ fn clustering_main_loop(
                                 distance: c1.distance(unmerged),
                                 cluster1_index: link.cluster1_index,
                                 cluster2_index: unmerged_idx,
-                                cluster1_num_categories: c1.num_categories(),
-                                cluster2_num_categories: unmerged.num_categories(),
+                                cluster1_summary_size: c1.summary_size(),
+                                cluster2_summary_size: unmerged.summary_size(),
                             })
                         }
                     }
@@ -159,8 +164,8 @@ fn clustering_main_loop(
                             distance: c2.distance(unmerged),
                             cluster1_index: unmerged_idx,
                             cluster2_index: link.cluster2_index,
-                            cluster1_num_categories: unmerged.num_categories(),
-                            cluster2_num_categories: c2.num_categories(),
+                            cluster1_summary_size: unmerged.summary_size(),
+                            cluster2_summary_size: c2.summary_size(),
                         })
                     }
                 }
@@ -174,8 +179,8 @@ fn clustering_main_loop(
                             distance: unmerged1.distance(unmerged2),
                             cluster1_index: unmerged1_idx,
                             cluster2_index: unmerged2_idx,
-                            cluster1_num_categories: unmerged1.num_categories(),
-                            cluster2_num_categories: unmerged2.num_categories(),
+                            cluster1_summary_size: unmerged1.summary_size(),
+                            cluster2_summary_size: unmerged2.summary_size(),
                         })
                     }
                 }
@@ -213,12 +218,12 @@ where
     R: RngCore,
 {
     let num_rows = data.get_num_rows();
-    let num_cols = data.get_num_columns() as u16;
+    let num_cols = data.get_num_columns();
     let clusters: Vec<cluster::Cluster> = (0..num_rows)
         .map({
             |r| cluster::Cluster {
                 merged_into: None,
-                categories: data.create_cluster_summary(r),
+                summary: data.create_cluster_summary(r),
                 dendrogram: Some(dendrogram::Dendrogram::Leaf(r)),
             }
         })
@@ -232,8 +237,8 @@ where
             distance: clusters[*row_idx1].distance(&clusters[*row_idx2]),
             cluster1_index: *row_idx1,
             cluster2_index: *row_idx2,
-            cluster1_num_categories: num_cols,
-            cluster2_num_categories: num_cols,
+            cluster1_summary_size: num_cols,
+            cluster2_summary_size: num_cols,
         });
     }
 

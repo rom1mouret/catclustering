@@ -3,7 +3,7 @@ use crate::dendrogram::Dendrogram;
 use std::cmp::{Ord, Ordering, PartialEq, PartialOrd};
 
 pub(crate) struct Cluster {
-    pub(crate) categories: Box<dyn ClusterSummary>,
+    pub(crate) summary: Box<dyn ClusterSummary>,
     pub(crate) merged_into: Option<usize>,
     pub(crate) dendrogram: Option<Dendrogram>,
 }
@@ -11,8 +11,8 @@ pub(crate) struct Cluster {
 pub(crate) struct Link {
     pub(crate) cluster1_index: usize,
     pub(crate) cluster2_index: usize,
-    pub(crate) cluster1_num_categories: u16,
-    pub(crate) cluster2_num_categories: u16,
+    pub(crate) cluster1_summary_size: usize,
+    pub(crate) cluster2_summary_size: usize,
     pub(crate) distance: f32,
 }
 
@@ -39,11 +39,11 @@ impl Ord for Link {
 }
 
 impl Cluster {
-    pub(crate) fn num_categories(&self) -> u16 {
-        self.categories.num_categories()
+    pub(crate) fn summary_size(&self) -> usize {
+        self.summary.summary_size()
     }
 
     pub(crate) fn distance(&self, other: &Cluster) -> f32 {
-        self.categories.distance(&*other.categories)
+        self.summary.distance(&*other.summary)
     }
 }

@@ -2,7 +2,7 @@ use std::any::Any;
 
 /// The trait you need to implement to provide the algorithm a distance and merging strategy.
 pub trait ClusterSummary {
-    fn num_categories(&self) -> u16;
+    fn summary_size(&self) -> usize;
 
     /// Doesn't have to be a proper distance. It has to be symmetric, but it can:
     ///

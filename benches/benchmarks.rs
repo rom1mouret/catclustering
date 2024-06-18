@@ -15,14 +15,16 @@ struct MyData {
 }
 
 impl catclustering::ClusterSummary for SimpleMatrix {
-    fn num_categories(&self) -> u16 {
-        self.col1to4.count_ones() as u16 + self.col5.len() as u16
+    fn summary_size(&self) -> usize {
+        self.col1to4.count_ones() as usize + self.col5.len() 
     }
-    fn distance(&self, other: &dyn catclustering::ClusterSummary) -> i16 {
+    fn distance(&self, other: &dyn catclustering::ClusterSummary) -> f32 {
         let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
-        (self.col1to4 ^ o.col1to4).count_ones() as i16
-            + self.col5.symmetric_difference(&o.col5).count() as i16
+        let intersection = (self.col1to4 & o.col1to4).count_ones();
+
+        (self.summary_size() + other.summary_size()) as f32 - intersection as f32
     }
+    
     fn extend(&mut self, other: &dyn catclustering::ClusterSummary) {
         let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
 
@@ -39,8 +41,8 @@ impl catclustering::ClusterSummary for SimpleMatrix {
 }
 
 impl catclustering::IndexableCategoryData for MyData {
-    fn get_value(&self, row_index: usize, column_index: usize) -> u16 {
-        self.vecs[row_index][column_index] as u16
+    fn get_value(&self, row_index: usize, column_index: usize) -> f32 {
+        self.vecs[row_index][column_index] as f32
     }
 
     fn get_num_columns(&self) -> usize {
@@ -56,7 +58,7 @@ impl catclustering::IndexableCategoryData for MyData {
         Box::new(SimpleMatrix {
             col1to4: (1 << row[0])
                 | (1 << (row[1] + 8))
-                | (2 << (row[2] + 16))
+                | (1 << (row[2] + 16))
                 | (1 << (row[3] + 24)),
             col5: HashSet::from_iter(vec![row[4] as u16]),
         })
@@ -66,6 +68,8 @@ impl catclustering::IndexableCategoryData for MyData {
 fn create_random_matrix(rows: usize, cols: usize) -> Vec<Vec<i32>> {
     let mut rng = rand::thread_rng();
     let mut matrix = Vec::with_capacity(rows);
+
+    // TODO: add cardinality
 
     for _ in 0..rows {
         let row: Vec<i32> = (0..cols).map(|_| rng.gen_range(0..5)).collect();
