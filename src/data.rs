@@ -2,7 +2,8 @@ use std::any::Any;
 
 /// The trait you need to implement to provide the algorithm a distance and merging strategy.
 pub trait ClusterSummary {
-    /// 
+    /// The size of the summary structure (not of the cluster!).
+    /// This increases when you add new categories to the cluster, and never decreases.
     fn summary_size(&self) -> usize;
 
     /// Distance between clusters.

@@ -20,7 +20,7 @@ impl catclustering::ClusterSummary for SimpleMatrix {
     }
     fn distance(&self, other: &dyn catclustering::ClusterSummary) -> f32 {
         let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
-        let intersection = (self.col1to4 & o.col1to4).count_ones();
+        let intersection = (self.col1to4 & o.col1to4).count_ones() as usize + self.col5.intersection(&o.col5).count();
 
         (self.summary_size() + other.summary_size()) as f32 - intersection as f32
     }
@@ -65,14 +65,14 @@ impl catclustering::IndexableData for MyData {
     }
 }
 
-fn create_random_matrix(rows: usize, cols: usize) -> Vec<Vec<i32>> {
+fn create_random_matrix(rows: usize, cardinality: [i32; 5]) -> Vec<Vec<i32>> {
     let mut rng = rand::thread_rng();
     let mut matrix = Vec::with_capacity(rows);
 
-    // TODO: add cardinality
-
     for _ in 0..rows {
-        let row: Vec<i32> = (0..cols).map(|_| rng.gen_range(0..5)).collect();
+        let row: Vec<i32> = (0..cardinality.len())
+            .map(|k| rng.gen_range(0..1000) % cardinality[k])
+            .collect();
         matrix.push(row);
     }
 
@@ -85,7 +85,7 @@ fn any_size(c: &mut Criterion, n_rows: usize) {
 
     let mut rng = rand::thread_rng();
     let matrix = MyData {
-        vecs: create_random_matrix(n_rows, 5),
+        vecs: create_random_matrix(n_rows, [8, 8, 8, 8, 2000]),
     };
 
     group.bench_function(format!("{n_rows} rows"), |b| {

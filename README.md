@@ -77,7 +77,7 @@ impl catclustering::ClusterSummary for SimpleMatrix {
     }
     fn distance(&self, other: &dyn catclustering::ClusterSummary) -> f32 {
         let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
-        let intersection = (self.col1to4 & o.col1to4).count_ones();
+        let intersection = (self.col1to4 & o.col1to4).count_ones() as usize + self.col5.intersection(&o.col5).count();
 
         (self.summary_size() + other.summary_size()) as f32 - intersection as f32
     }
@@ -138,11 +138,11 @@ fn create_random_matrix(rows: usize, cardinality: [i32; 5]) -> Vec<Vec<i32>> {
 }
 
 fn main() {
-    let matrix = MyData{vecs: create_random_matrix(10_000, [8, 8, 8, 8, 400])};
+    let matrix = MyData{vecs: create_random_matrix(10_000, [8, 8, 8, 8, 2000])};
 
     // main algorithm
     let mut rng = rand::thread_rng(); 
-    let mut dendro = catclustering::create_dendrogram(&matrix, None, &mut rng);
+    let dendro = catclustering::create_dendrogram(&matrix, None, &mut rng);
    
     // more interpretable results
     let clusters = catclustering::find_clusters(&dendro, 100);
@@ -159,11 +159,10 @@ The benchmarks are run from the example above.
 
 | rows       | time   |
 | ---------- | ------ |
-| 10,000     | 61 ms  |
-| 100,000    | 840 ms |
-| 1,000,000  | 33.8 s |
+| 10,000     | 2.5 s  |
+| 100,000    | 29 s   |
+| 1,000,000  | 4 min  |
 | 10,000,000 | 14 min |
-| 50,000,000 | 76 min |
 
 Specs:
 

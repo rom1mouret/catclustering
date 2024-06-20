@@ -97,7 +97,7 @@ fn clustering_main_loop(
                                 assert!(new_distance >= link.distance, "distance function does not statisfy properties required for complete-linkage");
                             }
 
-                            // one of the two clusters have changed -> we need to update the distance
+                            // one of the two clusters has changed -> we need to update the distance
                             heap.push(cluster::Link {
                                 distance: new_distance,
                                 cluster1_index: link.cluster1_index,
