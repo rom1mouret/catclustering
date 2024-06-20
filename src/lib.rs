@@ -10,7 +10,7 @@ mod dendrogram;
 
 pub use algorithm::create_dendrogram;
 pub use data::ClusterSummary;
-pub use data::IndexableCategoryData;
+pub use data::IndexableData;
 pub use dendrogram::assign_rows_to_clusters;
 pub use dendrogram::find_clusters;
 
@@ -56,7 +56,7 @@ mod tests {
         }
     }
 
-    impl data::IndexableCategoryData for Vec<Vec<i32>> {
+    impl data::IndexableData for Vec<Vec<i32>> {
         fn get_value(&self, row_index: usize, column_index: usize) -> f32 {
             self[row_index][column_index] as f32
         }

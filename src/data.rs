@@ -21,7 +21,7 @@ pub trait ClusterSummary {
 }
 
 /// The trait you need to implement for the clustering algorithm to access your data.
-pub trait IndexableCategoryData {
+pub trait IndexableData {
     fn get_value(&self, row_index: usize, column_index: usize) -> f32;
     fn get_num_columns(&self) -> usize;
     fn get_num_rows(&self) -> usize;

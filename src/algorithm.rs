@@ -12,7 +12,7 @@ fn find_neighbors<D, R>(
     rng: &mut R,
 ) -> HashSet<(usize, usize)>
 where
-    D: data::IndexableCategoryData,
+    D: data::IndexableData,
     R: rand::Rng,
 {
     let init_ite = init_iterations.unwrap_or(1);
@@ -214,7 +214,7 @@ pub fn create_dendrogram<D, R>(
     rng: &mut R,
 ) -> dendrogram::Dendrogram
 where
-    D: data::IndexableCategoryData,
+    D: data::IndexableData,
     R: RngCore,
 {
     let num_rows = data.get_num_rows();

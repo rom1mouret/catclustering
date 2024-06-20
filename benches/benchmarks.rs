@@ -40,7 +40,7 @@ impl catclustering::ClusterSummary for SimpleMatrix {
     }
 }
 
-impl catclustering::IndexableCategoryData for MyData {
+impl catclustering::IndexableData for MyData {
     fn get_value(&self, row_index: usize, column_index: usize) -> f32 {
         self.vecs[row_index][column_index] as f32
     }
