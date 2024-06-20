@@ -2,21 +2,20 @@ use std::any::Any;
 
 /// The trait you need to implement to provide the algorithm a distance and merging strategy.
 pub trait ClusterSummary {
+    /// 
     fn summary_size(&self) -> usize;
 
-    /// Doesn't have to be a proper distance. It has to be symmetric, but it can:
-    ///
-    /// * be negative
-    /// * not satisfy the triangle inequality
+    /// Distance between clusters.
+    /// Not a proper distance. Check README to make sure your distance satisfies the algorithm's conditions.
     fn distance(&self, other: &dyn ClusterSummary) -> f32;
 
     /// Merge another ClusterSummary into the one at hand.
     fn extend(&mut self, other: &dyn ClusterSummary);
 
-    /// Clear the memory used by your structure
+    /// Clear the memory used by your structure.
     fn clear(&mut self);
 
-    /// Return itself. Used for dynamic dispatch
+    /// Return itself. Used for dynamic dispatch.
     fn as_any(&self) -> &dyn Any;
 }
 

@@ -94,7 +94,7 @@ fn clustering_main_loop(
                         {
                             let new_distance = c1.distance(c2);
                             if cfg!(debug_assertions) {
-                                assert!(new_distance < link.distance, "distance function does not statisfy properties required for complete-linkage");
+                                assert!(new_distance >= link.distance, "distance function does not statisfy properties required for complete-linkage");
                             }
 
                             // one of the two clusters have changed -> we need to update the distance

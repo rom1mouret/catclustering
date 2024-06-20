@@ -35,9 +35,9 @@ mod tests {
         }
         fn distance(&self, other: &dyn data::ClusterSummary) -> f32 {
             let o = other.as_any().downcast_ref::<SimpleMatrix>().unwrap();
-            let mut d = 0;
+            let mut d = self.summary_size() + o.summary_size();
             for i in 0..self.sets.len() {
-                d += self.sets[i].symmetric_difference(&o.sets[i]).count();
+                d -= self.sets[i].intersection(&o.sets[i]).count();
             }
             d as f32
         }
