@@ -1,7 +1,20 @@
 [package]
-name = "agg_rust"
-version = "0.1.0"
+name = "catclustering"
+version = "0.2.1"
 edition = "2021"
+license = "MIT"
+description = "Agglomerative Clustering For Categorical Data"
+readme = "README.md"
+homepage = "https://github.com/rom1mouret/catclustering"
+
 
 [dependencies]
 rand = "0.8.5"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "benchmarks"
+path = "benches/benchmarks.rs"
+harness = false
