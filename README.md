@@ -162,7 +162,7 @@ The benchmarks are run from the example above.
 | 10,000     | 2.5 s  |
 | 100,000    | 29 s   |
 | 1,000,000  | 4 min  |
-| 10,000,000 | 14 min |
+| 10,000,000 | 46 min |
 
 Specs:
 
