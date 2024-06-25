@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 description = "Agglomerative Clustering For Categorical Data"
 readme = "README.md"
-homepage = "https://github.com/rom1mouret/catclustering"
+repository = "https://github.com/rom1mouret/catclustering"
 
 
 [dependencies]
